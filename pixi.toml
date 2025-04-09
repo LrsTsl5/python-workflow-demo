@@ -1,0 +1,81 @@
+[project]
+channels = ["conda-forge"]
+name = "python-workflow-demo"
+platforms = ["win-64", "linux-64"]
+version = "2025.1"
+# repository = "https://github.com/HHNK/spoc_hhnk"
+
+[tasks]
+#Styling
+sort_imports = "python -m ruff check  ./**/*.py --select I --fix --force-exclude"
+fmt = "python -m ruff format ./**/*.py --force-exclude"
+style = {depends-on = ["sort_imports", "fmt"]} # `pixi run style`
+
+lab = "jupyter lab"
+
+htt = "pip install --no-build-isolation --no-deps --disable-pip-version-check -e ../hhnk-threedi-tools"
+hrt = "pip install --no-deps -e ../hhnk-research-tools"
+postinstall = { depends-on = ["htt", "hrt"] }
+
+
+#Starting vs code using vs-code.cmd (pixi run code)
+code = "code"
+code_insiders = "code-insiders"
+
+[feature.test.tasks]
+tests = "python -m pytest tests_demo/"
+
+[dependencies]
+python = "3.12.*"
+numpy ="<2"
+pandas = "*"
+geopandas = "*"
+pyproj = "*"
+xlrd = "*"
+xlwt = "*"
+openpyxl = "*"
+lxml = "*"
+pyodbc = "*"
+pyarrow = "*"
+rioxarray = "*"
+fiona = "*"
+pip = "*"
+requests = "*"
+oracledb = "*"
+tqdm = "*"
+ruff = "*"
+gdal = "*"
+urllib3 = "<2.0" #threedi-api-client
+pytest = "*"
+pytest-cov = "*"
+
+[pypi-dependencies]
+python-dotenv = "*"
+threedigrid = "==2.3.3"
+threedidepth = "==0.6.3"
+threedigrid_builder = "==1.14.4"
+threedi-api-client = "==4.1.8"
+
+
+[feature.dev.dependencies]
+jupyterlab = "*"
+ipywidgets = "*"
+jupytext = "*"
+twine="*"
+
+[feature.dev.pypi-dependencies]
+# Editable installs, not installed on test. #FIXME doesnt work on Github Actions.
+# https://github.com/prefix-dev/pixi/issues/2763
+# FIXME disabled. should run pixi run postinstall
+# hhnk-threedi-tools = { path = "../hhnk-threedi-tools", editable = true }
+# hhnk-research-tools = { path = "../hhnk-research-tools", editable = true }
+python_workflow_demo = { path = ".", editable = true }
+
+[feature.test.pypi-dependencies]
+#Install a branch from github
+hhnk-research-tools = { git = "https://github.com/hhnk/hhnk-research-tools.git", rev = "main" }
+
+
+[environments]
+default = ["dev"]
+test = { features=["test"], no-default-feature = false }

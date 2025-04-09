@@ -1,0 +1,34 @@
+[project]
+name = "python_workflow_demo"
+version = "0.1.0"
+description = "Demo python usage"
+license = "MIT"
+
+[project.urls]
+Repository = "https://github.com/hhnk/python-workflow-demo.git"
+
+[tool.setuptools.packages.find]
+include = ["python_workflow_demo"]
+
+[tool.ruff]
+# see https://docs.astral.sh/ruff/rules/ for meaning of rules
+line-length = 119
+
+#Exclude external packages in formatter
+extend-exclude = [".pixi/*"]
+include = ["*.py"]
+
+[tool.ruff.lint]
+select = ["D", "E", "F", "NPY", "PD", "C4", "I"]
+ignore = ["D1", "D202", "D205", "D400", "D404", "E501", "PD002", "PD901"]
+fixable = ["I"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint.per-file-ignores]
+# Ignore unused imports in init
+"__init__.py" = ["F401",  "I001"]
+
+[tool.pylint]
+disable = ["W1203"]

@@ -1,0 +1,16 @@
+__pycache__
+.mypy_cache
+.idea
+.ipynb_checkpoints
+.pytest_chache
+.eggs
+*.egg-info
+*.aux.xml
+dist
+build
+local_settings.py
+Thumbs.db
+
+# Pytests
+.coverage
+coverage.xml

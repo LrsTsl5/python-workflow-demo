@@ -1,0 +1,36 @@
+name: Tests workflow demo
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+
+# Automatically stop old builds on the same branch/PR
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+  default:
+    strategy:
+      matrix:
+        os: ["windows-latest", ]
+        # ["ubuntu-latest", "windows-latest"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup pixi
+        uses: prefix-dev/setup-pixi@v0.8.3
+        with:
+          pixi-version: "latest"
+          cache: true
+          # cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          environments: test
+          
+      - name: Run Tests
+        run: pixi run -e test tests
+
+
