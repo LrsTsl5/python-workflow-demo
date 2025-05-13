@@ -1,9 +1,11 @@
 # %%
 
-import random
-import requests
 import json
+import random
+
 import pandas as pd
+import requests
+
 
 def fetch_temperature_data():
     """
@@ -20,15 +22,15 @@ def fetch_temperature_data():
             "AquoMetadata": {
                 "Compartiment": {"Code": "OW"},
                 "Grootheid": {"Code": "CONCTTE"},
-                "Parameter": {"Code": "Cd"}
+                "Parameter": {"Code": "Cd"},
             }
         },
         "Periode": {
             "Begindatumtijd": "2000-01-01T00:00:00.000+01:00",
-            "Einddatumtijd": "2030-01-01T00:00:00.000+01:00"
-        }
+            "Einddatumtijd": "2030-01-01T00:00:00.000+01:00",
+        },
     }
-    headers = {'Content-Type': 'application/json'}
+    headers = {"Content-Type": "application/json"}
 
     try:
         response = requests.post(url, data=json.dumps(api_payload), headers=headers)
@@ -37,6 +39,7 @@ def fetch_temperature_data():
     except requests.exceptions.RequestException as e:
         print(f"Error while fetching data: {e}")
         return None
+
 
 def extract_measurements(data):
     """
@@ -48,14 +51,15 @@ def extract_measurements(data):
     Returns:
         list: A list of measurement dictionaries.
     """
-    if not data or 'WaarnemingenLijst' not in data:
+    if not data or "WaarnemingenLijst" not in data:
         print("Invalid or empty data received.")
         return []
 
     measurements = []
-    for row in data['WaarnemingenLijst']:
-        measurements.extend(row.get('MetingenLijst', []))
+    for row in data["WaarnemingenLijst"]:
+        measurements.extend(row.get("MetingenLijst", []))
     return measurements
+
 
 def process_measurements(measurements):
     """
@@ -72,10 +76,11 @@ def process_measurements(measurements):
         return pd.DataFrame()
 
     df = pd.DataFrame(measurements)
-    if 'Meetwaarde' in df.columns:
-        df['waardes'] = df['Meetwaarde'].apply(lambda x: x.get('Waarde_Numeriek') if isinstance(x, dict) else None)
-        df.drop(columns=['Meetwaarde', 'WaarnemingMetadata'], inplace=True, errors='ignore')
+    if "Meetwaarde" in df.columns:
+        df["waardes"] = df["Meetwaarde"].apply(lambda x: x.get("Waarde_Numeriek") if isinstance(x, dict) else None)
+        df.drop(columns=["Meetwaarde", "WaarnemingMetadata"], inplace=True, errors="ignore")
     return df
+
 
 def add_validation_errors(df):
     """
@@ -87,12 +92,13 @@ def add_validation_errors(df):
     Returns:
         pd.DataFrame: DataFrame with introduced validation errors.
     """
+
     def introduce_error_tijdstip(tijdstip):
         # Randomly return invalid date formats
         errors = [
-            "INVALID_DATE",                 # Completely invalid
-            "2080-10-100 28:28:28",         # Invalid format and impossible date
-            "2025-05-12T25:61:00.000+01:00" # Invalid time
+            "INVALID_DATE",  # Completely invalid
+            "2080-10-100 28:28:28",  # Invalid format and impossible date
+            "2025-05-12T25:61:00.000+01:00",  # Invalid time
         ]
         return random.choice(errors) if random.random() < 0.5 else tijdstip
 
@@ -100,16 +106,35 @@ def add_validation_errors(df):
         # Randomly return invalid values
         errors = [
             "STRING_INSTEAD_OF_NUMBER",  # Invalid type
-            random.uniform(1001, 5000), # Weird large numbers
-            None                        # Missing value
+            random.uniform(1001, 5000),  # Weird large numbers
+            None,  # Missing value
         ]
         return random.choice(errors) if random.random() < 0.5 else waarde
 
     # Apply errors to Tijdstip and waardes columns
-    df['Tijdstip'] = df['Tijdstip'].apply(lambda x: introduce_error_tijdstip(x) if random.random() < 0.2 else x)
-    df['waardes'] = df['waardes'].apply(lambda x: introduce_error_waardes(x) if random.random() < 0.2 else x)
-    
+    df["Tijdstip"] = df["Tijdstip"].apply(lambda x: introduce_error_tijdstip(x) if random.random() < 0.2 else x)
+    df["waardes"] = df["waardes"].apply(lambda x: introduce_error_waardes(x) if random.random() < 0.2 else x)
+
     return df
+
+
+def value_validation(df: pd.DataFrame):
+    print("Validating values in DataFrame")
+
+    # Remove rows with invalid values in any column
+    df = df[df["waardes"] != "STRING_INSTEAD_OF_NUMBER"]
+
+    # Define thresholds and invalid values
+    large_number_threshold = 1000  # Example threshold for large numbers
+
+    # Remove rows with large numbers in the 'waardes' column
+    df = df[df["waardes"] < large_number_threshold]
+
+    # Remove rows with missing values
+    df = df.dropna()
+
+    return df
+
 
 def main():
     """
@@ -125,14 +150,17 @@ def main():
     # Write test to check your function
     # df = dateformat_validation(df)
 
-    # Assignment 2 
+    # Assignment 2
     # Create validation of dataformat, add as function and push to branch
     # Write test to check your function
-    # df = value_validation(df)
+    df = value_validation(df)
 
     print(df.columns)
     print(df)
 
+
 if __name__ == "__main__":
     main()
 
+
+# %%
